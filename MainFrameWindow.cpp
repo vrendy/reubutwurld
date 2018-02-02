@@ -300,10 +300,22 @@ namespace Application
 					GBPosition( 2, 2),
 					GBSpan( 1, 1), EXPAND);
 
+		sizer->Add( makeButton( panel,
+								"Merge worlds...",
+								[this](CommandEvent &anEvent){this->OnMergeWorlds(anEvent);}),
+					GBPosition( 3, 0),
+					GBSpan( 1, 1), EXPAND);
+
 		panel->SetSizerAndFit( sizer);
 
 		return panel;
 	}
+
+	void MainFrameWindow::OnMergeWorlds(CommandEvent& UNUSEDPARAM(anEvent))
+	{
+		Application::Logger::log("Merging");
+	}
+
 	/**
 	 *
 	 */

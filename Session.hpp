@@ -134,6 +134,7 @@ namespace Messaging
 			{
 				if (!error)
 				{
+					std::cout << aMessage.getBody() << std::endl;
 					handleMessageRead( aMessage);
 				} else
 				{

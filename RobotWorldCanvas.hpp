@@ -43,6 +43,7 @@ namespace View
 			 *
 			 */
 			virtual ~RobotWorldCanvas();
+
 			/**
 			 * The canvas is partially displayed in a scrolling window. Hence, the user viewable part of this window
 			 * is probably just a part of this window. This function takes a point in the (visible) scrolling window coordinates

@@ -266,6 +266,7 @@ namespace Model
 			 *
 			 */
 			bool collision();
+
 		private:
 			std::string name;
 
@@ -285,6 +286,10 @@ namespace Model
 
 			std::thread robotThread;
 			mutable std::recursive_mutex robotMutex;
+
+			//---------- ---------- [Added functions] ---------- ----------//
+			std::string locationToString(Point aLocation);
+			Point stringToLocation(std::string aString);
 	};
 } // namespace Model
 #endif // ROBOT_HPP_

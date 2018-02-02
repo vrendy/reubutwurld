@@ -371,6 +371,9 @@ namespace Model
 				aMessage.setBody( ": case 1 " + aMessage.asString());
 				break;
 			}
+			case 123:
+				Application::Logger::log("Request: " + aMessage.getBody());
+				break;
 			default:
 			{
 				Application::Logger::log( __PRETTY_FUNCTION__ + std::string(": default"));
@@ -389,13 +392,17 @@ namespace Model
 		{
 			case EchoResponse:
 			{
-				Application::Logger::log( __PRETTY_FUNCTION__ + std::string( ": case EchoResponse: not implemented, ") + aMessage.asString());
+				std::cout << __PRETTY_FUNCTION__ + std::string( ": case EchoResponse: not implemented, ") + aMessage.asString() << std::endl;
 
 				break;
 			}
+			case 123:
+				Application::Logger::log("Response: " + aMessage.getBody());
+				position = stringToLocation(aMessage.getBody());
+				break;
 			default:
 			{
-				Application::Logger::log( __PRETTY_FUNCTION__ + std::string( ": default not implemented, ") + aMessage.asString());
+				std::cout << __PRETTY_FUNCTION__ + std::string( ": default not implemented, ") + aMessage.asString() << std::endl;
 				break;
 			}
 		}
@@ -468,6 +475,25 @@ namespace Model
 
 				notifyObservers();
 
+				if(communicating)
+				{
+					std::string localPort = "12345";
+					if (Application::MainApplication::isArgGiven( "-local_port"))
+					{
+						localPort = Application::MainApplication::getArg( "-local_port").value;
+					}
+
+					std::cout << "Communicating on ip: localhost, port: " << localPort << std::endl;
+
+					Messaging::Client c1ient( 	"localhost",
+												localPort,
+												toPtr<Robot>());
+
+					//TODO Fix deze message
+					Messaging::Message message(123,locationToString(position));
+					c1ient.dispatchMessage( message);
+				}
+
 				//TODO Hier staat een sleep?
 				std::this_thread::sleep_for( std::chrono::milliseconds(100));
 
@@ -493,6 +519,25 @@ namespace Model
 		{
 			std::cerr << __PRETTY_FUNCTION__ << ": unknown exception" << std::endl;
 		}
+	}
+
+	std::string Robot::locationToString(Point aLocation)
+	{
+		std::stringstream ss;
+		ss << std::setw(4) << std::setfill('0') << aLocation.x;
+		ss << std::setw(4) << std::setfill('0') << aLocation.y;
+
+		std::cout << "SS: " << ss.str() << std::endl;
+		return ss.str();
+	}
+
+	Point Robot::stringToLocation(std::string aString)
+	{
+		unsigned short locationX = (aString[0] - 48) * 1000 + (aString[1] - 48) * 100 + (aString[2] - 48) * 10 + (aString[3] - 48);
+		unsigned short locationY = (aString[4] - 48) * 1000 + (aString[5] - 48) * 100 + (aString[6] - 48) * 10 + (aString[7] - 48);
+		std::cout << "LOC X: " << locationX << " LOC Y: " << locationY << std::endl;
+
+		return Point(locationX, locationY);
 	}
 
 	/**
