@@ -509,6 +509,9 @@ namespace Model
 		}
 	}
 
+	/*
+	 *
+	 */
 	bool Robot::arrived(GoalPtr aGoal)
 	{
 		if(aGoal != nullptr)
