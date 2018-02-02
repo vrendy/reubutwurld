@@ -15,6 +15,7 @@
 #include "Message.hpp"
 #include "MainApplication.hpp"
 #include "LaserDistanceSensor.hpp"
+#include "Logger.hpp"
 
 namespace Model
 {
@@ -172,9 +173,18 @@ namespace Model
 	 */
 	void Robot::startActing()
 	{
-		acting = true;
-		std::thread newRobotThread( [this]{	startDriving();});
-		robotThread.swap( newRobotThread);
+		goal = RobotWorld::getRobotWorld().getGoal("Goal");
+
+		if(goal != nullptr)
+		{
+			acting = true;
+			std::thread newRobotThread( [this]{	startDriving(goal);});
+			robotThread.swap( newRobotThread);
+		}
+		else
+		{
+			Application::Logger::log("No goal found!");
+		}
 	}
 	/**
 	 *
@@ -188,15 +198,13 @@ namespace Model
 	/**
 	 *
 	 */
-	void Robot::startDriving()
+	void Robot::startDriving(GoalPtr aGoal)
 	{
 		driving = true;
-
-		goal = RobotWorld::getRobotWorld().getGoal( "Goal");
-		calculateRoute(goal);
-
+		calculateRoute(aGoal);
 		drive();
 	}
+
 	/**
 	 *
 	 */
@@ -204,6 +212,7 @@ namespace Model
 	{
 		driving = false;
 	}
+
 	/**
 	 *
 	 */
@@ -460,7 +469,7 @@ namespace Model
 				notifyObservers();
 
 				//TODO Hier staat een sleep?
-				std::this_thread::sleep_for( std::chrono::milliseconds( 100));
+				std::this_thread::sleep_for( std::chrono::milliseconds(100));
 
 				// this should be the last thing in the loop
 				if(driving == false)
@@ -477,6 +486,7 @@ namespace Model
 		}
 		catch (std::exception& e)
 		{
+			Application::Logger::log(e.what());
 			std::cerr << __PRETTY_FUNCTION__ << ": " << e.what() << std::endl;
 		}
 		catch (...)
@@ -491,7 +501,7 @@ namespace Model
 	void Robot::calculateRoute(GoalPtr aGoal)
 	{
 		path.clear();
-		if (aGoal)
+		if (aGoal != nullptr)
 		{
 			// Turn off logging if not debugging AStar
 			Application::Logger::setDisable();
@@ -505,7 +515,7 @@ namespace Model
 		}
 		else
 		{
-
+			throw(std::logic_error("No goal found"));
 		}
 	}
 

@@ -132,7 +132,7 @@ namespace Model
 			/**
 			 *
 			 */
-			virtual void startDriving();
+			virtual void startDriving(GoalPtr aGoal);
 			/**
 			 *
 			 */
