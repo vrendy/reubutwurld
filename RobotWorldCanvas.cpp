@@ -437,6 +437,7 @@ namespace View
 	 */
 	void RobotWorldCanvas::populate( int aNumberOfWalls /*= 2*/)
 	{
+		unpopulate();
 		Model::RobotWorld::getRobotWorld().populate(aNumberOfWalls);
 	}
 	/**
