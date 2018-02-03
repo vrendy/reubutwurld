@@ -223,7 +223,7 @@ namespace Model
 			communicating = true;
 
 
-			std::string localPort = "12345";
+			localPort = "12345";
 			if (Application::MainApplication::isArgGiven( "-local_port"))
 			{
 				localPort = Application::MainApplication::getArg( "-local_port").value;
@@ -242,7 +242,7 @@ namespace Model
 		{
 			communicating = false;
 
-			std::string localPort = "12345";
+			localPort = "12345";
 			if (Application::MainApplication::isArgGiven( "-local_port"))
 			{
 				localPort = Application::MainApplication::getArg( "-local_port").value;
@@ -372,8 +372,12 @@ namespace Model
 				break;
 			}
 			case UpdatePositionRequest:
+			{
 				Application::Logger::log("Request: " + aMessage.getBody());
+				auto r2 = RobotWorld::getRobotWorld().getRobot("Robot2");
+				r2->setPosition(stringToLocation(aMessage.getBody()));
 				break;
+			}
 			default:
 			{
 				Application::Logger::log( __PRETTY_FUNCTION__ + std::string(": default"));
@@ -397,11 +401,15 @@ namespace Model
 				break;
 			}
 			case UpdatePositionResponse:
+			{
 				Application::Logger::log("Response: " + aMessage.getBody());
 
 				//TODO Hier de positie van de andere robot bijhouden
-				position = stringToLocation(aMessage.getBody());
+				//position = stringToLocation(aMessage.getBody());
+				auto r2 = RobotWorld::getRobotWorld().getRobot("Robot2");
+				r2->setPosition(stringToLocation(aMessage.getBody()));
 				break;
+			}
 			default:
 			{
 				std::cout << __PRETTY_FUNCTION__ + std::string( ": default not implemented, ") + aMessage.asString() << std::endl;
@@ -479,20 +487,27 @@ namespace Model
 
 				if(communicating)
 				{
-					std::string localPort = "12345";
+					localPort = "12345";
+					remotePort= "12399";
+
 					if (Application::MainApplication::isArgGiven( "-local_port"))
 					{
 						localPort = Application::MainApplication::getArg( "-local_port").value;
 					}
 
-					std::cout << "Communicating on ip: localhost, port: " << localPort << std::endl;
+					if (Application::MainApplication::isArgGiven( "-remote_port"))
+					{
+						remotePort = Application::MainApplication::getArg( "-remote_port").value;
+					}
+
+					std::cout << "Communicating on ip: localhost, port: " << localPort << " Remote port: " << remotePort << std::endl;
 
 					Messaging::Client c1ient( 	"localhost",
-												localPort,
+												remotePort,
 												toPtr<Robot>());
 
 					//TODO Fix dit met enum
-					Messaging::Message message(123,locationToString(position));
+					Messaging::Message message(UpdatePositionRequest ,locationToString(position));
 					c1ient.dispatchMessage( message);
 				}
 

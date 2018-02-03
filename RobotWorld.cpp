@@ -289,6 +289,7 @@ namespace Model
 	void RobotWorld::populate( int aNumberOfWalls /*= 2*/)
 	{
 		RobotWorld::getRobotWorld().newRobot( "Robot", Point( 50, 50),false);
+		RobotWorld::getRobotWorld().newRobot( "Robot2", Point( 50, 50),false);
 
 		static Point coordinates[] = { Point( 100, 400), Point( 350, 300),
 									   Point( 300, 100),

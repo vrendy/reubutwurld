@@ -292,6 +292,9 @@ namespace Model
 			//---------- ---------- [Added functions] ---------- ----------//
 			std::string locationToString(Point aLocation);
 			Point stringToLocation(std::string aString);
+
+			std::string localPort;
+			std::string remotePort;
 	};
 } // namespace Model
 #endif // ROBOT_HPP_
