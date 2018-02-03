@@ -246,7 +246,9 @@ namespace Model
 			enum MessageType
 			{
 				EchoRequest,
-				EchoResponse
+				EchoResponse,
+				UpdatePositionRequest,
+				UpdatePositionResponse
 			};
 
 		protected:

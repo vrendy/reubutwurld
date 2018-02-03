@@ -371,7 +371,7 @@ namespace Model
 				aMessage.setBody( ": case 1 " + aMessage.asString());
 				break;
 			}
-			case 123:
+			case UpdatePositionRequest:
 				Application::Logger::log("Request: " + aMessage.getBody());
 				break;
 			default:
@@ -396,8 +396,10 @@ namespace Model
 
 				break;
 			}
-			case 123:
+			case UpdatePositionResponse:
 				Application::Logger::log("Response: " + aMessage.getBody());
+
+				//TODO Hier de positie van de andere robot bijhouden
 				position = stringToLocation(aMessage.getBody());
 				break;
 			default:
@@ -441,7 +443,7 @@ namespace Model
 			//TODO Loop met sensor->setOn() in comments
 			for (std::shared_ptr< AbstractSensor > sensor : sensors)
 			{
-				//sensor->setOn();
+				sensor->setOn();
 			}
 
 			if (speed == 0.0)
@@ -489,7 +491,7 @@ namespace Model
 												localPort,
 												toPtr<Robot>());
 
-					//TODO Fix deze message
+					//TODO Fix dit met enum
 					Messaging::Message message(123,locationToString(position));
 					c1ient.dispatchMessage( message);
 				}
@@ -527,7 +529,6 @@ namespace Model
 		ss << std::setw(4) << std::setfill('0') << aLocation.x;
 		ss << std::setw(4) << std::setfill('0') << aLocation.y;
 
-		std::cout << "SS: " << ss.str() << std::endl;
 		return ss.str();
 	}
 

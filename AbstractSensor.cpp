@@ -77,10 +77,10 @@ namespace Model
 
 				// this should be either the last call in the loop or
 				// part of the while.
-				//			if (sensorThread.interruption_requested())
-				//			{
-				//				break;
-				//			}
+//				if (sensorThread.interruption_requested())
+//				{
+//					break;
+//				}
 			}
 		}
 		catch (std::exception& e)
