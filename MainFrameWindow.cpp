@@ -394,20 +394,13 @@ namespace Application
 	 */
 	void MainFrameWindow::OnStartListening( CommandEvent& UNUSEDPARAM(anEvent))
 	{
-		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
-		if (robot)
-		{
-			robot->startCommunicating();
-		}
+		Model::RobotWorld::getRobotWorld().startCommunicating();
 	}
 	/**
 	 *
 	 */
 	void MainFrameWindow::OnSendMessage( CommandEvent& UNUSEDPARAM(anEvent))
 	{
-		Model::RobotPtr robot = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
-		if (robot)
-		{
 			std::string remoteIpAdres = "localhost";
 			std::string remotePort = "12345";
 
@@ -424,20 +417,15 @@ namespace Application
 			// "Goodbye cruel world!" if something went wrong.
 			Messaging::Client c1ient( remoteIpAdres,
 									  remotePort,
-									  robot);
-			Messaging::Message message( Model::Robot::MessageType::EchoRequest, "Hello world!");
+									  Model::RobotWorld::getRobotWorld().getPointer());
+			Messaging::Message message( Model::RobotWorld::MessageType::EchoRequest, "Hello world!");
 			c1ient.dispatchMessage( message);
-		}
 	}
 	/**
 	 *
 	 */
 	void MainFrameWindow::OnStopListening( CommandEvent& UNUSEDPARAM(anEvent))
 	{
-		Model::RobotPtr thijs = Model::RobotWorld::getRobotWorld().getRobot( "Robot");
-		if (thijs)
-		{
-			thijs->stopCommunicating();
-		}
+		Model::RobotWorld::getRobotWorld().stopCommunicating();
 	}
 } // namespace Application

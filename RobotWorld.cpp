@@ -4,7 +4,11 @@
 #include "WayPoint.hpp"
 #include "Goal.hpp"
 #include "Wall.hpp"
+#include "MainApplication.hpp"
 #include <algorithm>
+#include "CommunicationService.hpp"
+#include "Client.hpp"
+#include "Message.hpp"
 
 namespace Model
 {
@@ -417,7 +421,7 @@ namespace Model
 	/**
 	 *
 	 */
-	RobotWorld::RobotWorld()
+	RobotWorld::RobotWorld() : localPort("12345"), remotePort("12346"), communicating(false), pointer(this)
 	{
 	}
 	/**
@@ -428,6 +432,128 @@ namespace Model
 		// No notification while I am in the destruction mode!
 		disableNotification();
 		unpopulate();
+
+		if(communicating)
+		{
+			stopCommunicating();
+		}
+	}
+
+	//----- ----- [Communication] ----- -----//
+	/**
+	 *
+	 */
+	void RobotWorld::startCommunicating()
+	{
+		if(!communicating)
+		{
+			communicating = true;
+
+
+			localPort = "12345";
+			if (Application::MainApplication::isArgGiven( "-local_port"))
+			{
+				localPort = Application::MainApplication::getArg( "-local_port").value;
+			}
+
+			Messaging::CommunicationService::getCommunicationService().runRequestHandler( Model::RobotWorld::getRobotWorld().getPointer(),
+																						  std::stoi(localPort));
+		}
+	}
+
+	/**
+	 *
+	 */
+	void RobotWorld::stopCommunicating()
+	{
+		if(communicating)
+		{
+			communicating = false;
+
+			localPort = "12345";
+			if (Application::MainApplication::isArgGiven( "-local_port"))
+			{
+				localPort = Application::MainApplication::getArg( "-local_port").value;
+			}
+
+			Messaging::Client c1ient( 	"localhost",
+										localPort,
+										Model::RobotWorld::getRobotWorld().getPointer());
+			Messaging::Message message( 1, "stop");
+			c1ient.dispatchMessage( message);
+		}
+	}
+
+	/**
+	 *
+	 */
+	void RobotWorld::handleRequest( Messaging::Message& aMessage)
+	{
+		switch(aMessage.getMessageType())
+		{
+			case EchoRequest:
+			{
+				Application::Logger::log( __PRETTY_FUNCTION__ + std::string(": EchoRequest"));
+
+				aMessage.setMessageType(EchoResponse);
+				aMessage.setBody( ": case 1 " + aMessage.asString());
+				break;
+			}
+			case UpdatePositionRequest:
+			{
+				Application::Logger::log("Request: " + aMessage.getBody());
+				auto r2 = RobotWorld::getRobotWorld().getRobot("Robot2");
+				r2->setPosition(stringToLocation(aMessage.getBody()));
+				break;
+			}
+			default:
+			{
+				Application::Logger::log( __PRETTY_FUNCTION__ + std::string(": default"));
+
+				aMessage.setBody( " default  Goodbye cruel world!");
+				break;
+			}
+		}
+	}
+
+	/**
+	 *
+	 */
+	void RobotWorld::handleResponse( const Messaging::Message& aMessage)
+	{
+		switch(aMessage.getMessageType())
+		{
+			case EchoResponse:
+			{
+				std::cout << __PRETTY_FUNCTION__ + std::string( ": case EchoResponse: not implemented, ") + aMessage.asString() << std::endl;
+
+				break;
+			}
+			case UpdatePositionResponse:
+			{
+				Application::Logger::log("Response: " + aMessage.getBody());
+				break;
+			}
+			default:
+			{
+				std::cout << __PRETTY_FUNCTION__ + std::string( ": default not implemented, ") + aMessage.asString() << std::endl;
+				break;
+			}
+		}
+	}
+
+	Point RobotWorld::stringToLocation(std::string aString)
+	{
+		unsigned short locationX = (aString[0] - 48) * 1000 + (aString[1] - 48) * 100 + (aString[2] - 48) * 10 + (aString[3] - 48);
+		unsigned short locationY = (aString[4] - 48) * 1000 + (aString[5] - 48) * 100 + (aString[6] - 48) * 10 + (aString[7] - 48);
+		std::cout << "LOC X: " << locationX << " LOC Y: " << locationY << std::endl;
+
+		return Point(locationX, locationY);
+	}
+
+	RobotWorldPtr RobotWorld::getPointer()
+	{
+		return pointer;
 	}
 
 } // namespace Model

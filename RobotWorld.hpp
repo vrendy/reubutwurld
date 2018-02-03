@@ -5,6 +5,8 @@
 #include <vector>
 #include "ModelObject.hpp"
 #include "Point.hpp"
+#include "Message.hpp"
+#include "MessageHandler.hpp"
 
 namespace Model
 {
@@ -26,7 +28,8 @@ namespace Model
 	/**
 	 *
 	 */
-	class RobotWorld : 	public ModelObject
+	class RobotWorld : 	public ModelObject,
+						public Messaging::MessageHandler
 	{
 		public:
 			/**
@@ -150,7 +153,52 @@ namespace Model
 			virtual std::string asDebugString() const;
 			//@}
 
-			void mergeWorlds();
+			/**
+			 * Starts a ServerConnection that listens at port 12345 unless given
+			 * an other port by specifying a command line argument -local_port=port
+			 */
+			void startCommunicating();
+			/**
+			 * Connects to the ServerConnection that listens at port 12345 unless given
+			 * an other port by specifying a command line argument -local_port=port
+			 * and sends a message with messageType "1" and a body with "stop"
+			 *
+			 */
+			void stopCommunicating();
+
+			/**
+			 * @name Messaging::MessageHandler functions
+			 */
+			//@{
+			/**
+			 * This function is called by a ServerSesssion whenever a message is received. If the request is handled,
+			 * any response *must* be set in the Message argument. The message argument is then echoed back to the
+			 * requester, probably a ClientSession.
+			 *
+			 * @see Messaging::RequestHandler::handleRequest( Messaging::Message& aMessage)
+			 */
+			virtual void handleRequest(Messaging::Message& aMessage);
+			/**
+			 * This function is called by a ClientSession whenever a response to a previous request is received.
+			 *
+			 * @see Messaging::ResponseHandler::handleResponse( const Messaging::Message& aMessage)
+			 */
+			virtual void handleResponse( const Messaging::Message& aMessage);
+
+			/**
+			 * @name The types of messages a Robot should understand
+			 */
+			//@{
+			enum MessageType
+			{
+				EchoRequest,
+				EchoResponse,
+				UpdatePositionRequest,
+				UpdatePositionResponse,
+				UpdateFieldRequest
+			};
+
+			RobotWorldPtr getPointer();
 
 		protected:
 			/**
@@ -170,6 +218,15 @@ namespace Model
 			mutable std::vector< WayPointPtr > wayPoints;
 			mutable std::vector< GoalPtr > goals;
 			mutable std::vector< WallPtr > walls;
+
+			std::string localPort;
+			std::string remotePort;
+
+			RobotWorldPtr pointer;
+
+			bool communicating;
+
+			Point stringToLocation(std::string aString);
 	};
 } // namespace Model
 #endif // ROBOTWORLD_HPP_

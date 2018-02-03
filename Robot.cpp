@@ -29,8 +29,7 @@ namespace Model
 								front( 0, 0),
 								speed( 0.0),
 								acting(false),
-								driving(false),
-								communicating(false)
+								driving(false)
 	{
 		std::shared_ptr< AbstractSensor > laserSensor( new LaserDistanceSensor( this));
 		attachSensor( laserSensor);
@@ -45,8 +44,7 @@ namespace Model
 								front( 0, 0),
 								speed( 0.0),
 								acting(false),
-								driving(false),
-								communicating(false)
+								driving(false)
 	{
 		std::shared_ptr< AbstractSensor > laserSensor( new LaserDistanceSensor( this));
 		attachSensor( laserSensor);
@@ -62,8 +60,7 @@ namespace Model
 								front( 0, 0),
 								speed( 0.0),
 								acting(false),
-								driving(false),
-								communicating(false)
+								driving(false)
 	{
 		std::shared_ptr< AbstractSensor > laserSensor( new LaserDistanceSensor( this));
 		attachSensor( laserSensor);
@@ -80,10 +77,6 @@ namespace Model
 		if(acting)
 		{
 			stopActing();
-		}
-		if(communicating)
-		{
-			stopCommunicating();
 		}
 	}
 	/**
@@ -213,48 +206,7 @@ namespace Model
 		driving = false;
 	}
 
-	/**
-	 *
-	 */
-	void Robot::startCommunicating()
-	{
-		if(!communicating)
-		{
-			communicating = true;
 
-
-			localPort = "12345";
-			if (Application::MainApplication::isArgGiven( "-local_port"))
-			{
-				localPort = Application::MainApplication::getArg( "-local_port").value;
-			}
-
-			Messaging::CommunicationService::getCommunicationService().runRequestHandler( toPtr<Robot>(),
-																						  std::stoi(localPort));
-		}
-	}
-	/**
-	 *
-	 */
-	void Robot::stopCommunicating()
-	{
-		if(communicating)
-		{
-			communicating = false;
-
-			localPort = "12345";
-			if (Application::MainApplication::isArgGiven( "-local_port"))
-			{
-				localPort = Application::MainApplication::getArg( "-local_port").value;
-			}
-
-			Messaging::Client c1ient( 	"localhost",
-										localPort,
-										toPtr<Robot>());
-			Messaging::Message message( 1, "stop");
-			c1ient.dispatchMessage( message);
-		}
-	}
 	/**
 	 *
 	 */
@@ -356,62 +308,7 @@ namespace Model
 			notifyObservers();
 		}
 	}
-	/**
-	 *
-	 */
-	void Robot::handleRequest( Messaging::Message& aMessage)
-	{
-		switch(aMessage.getMessageType())
-		{
-			case EchoRequest:
-			{
-				Application::Logger::log( __PRETTY_FUNCTION__ + std::string(": EchoRequest"));
 
-				aMessage.setMessageType(EchoResponse);
-				aMessage.setBody( ": case 1 " + aMessage.asString());
-				break;
-			}
-			case UpdatePositionRequest:
-			{
-				Application::Logger::log("Request: " + aMessage.getBody());
-				auto r2 = RobotWorld::getRobotWorld().getRobot("Robot2");
-				r2->setPosition(stringToLocation(aMessage.getBody()));
-				break;
-			}
-			default:
-			{
-				Application::Logger::log( __PRETTY_FUNCTION__ + std::string(": default"));
-
-				aMessage.setBody( " default  Goodbye cruel world!");
-				break;
-			}
-		}
-	}
-	/**
-	 *
-	 */
-	void Robot::handleResponse( const Messaging::Message& aMessage)
-	{
-		switch(aMessage.getMessageType())
-		{
-			case EchoResponse:
-			{
-				std::cout << __PRETTY_FUNCTION__ + std::string( ": case EchoResponse: not implemented, ") + aMessage.asString() << std::endl;
-
-				break;
-			}
-			case UpdatePositionResponse:
-			{
-				Application::Logger::log("Response: " + aMessage.getBody());
-				break;
-			}
-			default:
-			{
-				std::cout << __PRETTY_FUNCTION__ + std::string( ": default not implemented, ") + aMessage.asString() << std::endl;
-				break;
-			}
-		}
-	}
 	/**
 	 *
 	 */
@@ -480,31 +377,29 @@ namespace Model
 
 				notifyObservers();
 
-				if(communicating)
+				std::string localPort = "12345";
+				std::string remotePort= "12399";
+
+				if (Application::MainApplication::isArgGiven( "-local_port"))
 				{
-					localPort = "12345";
-					remotePort= "12399";
-
-					if (Application::MainApplication::isArgGiven( "-local_port"))
-					{
-						localPort = Application::MainApplication::getArg( "-local_port").value;
-					}
-
-					if (Application::MainApplication::isArgGiven( "-remote_port"))
-					{
-						remotePort = Application::MainApplication::getArg( "-remote_port").value;
-					}
-
-					std::cout << "Communicating on ip: localhost, port: " << localPort << " Remote port: " << remotePort << std::endl;
-
-					Messaging::Client c1ient( 	"localhost",
-												remotePort,
-												toPtr<Robot>());
-
-					//TODO Fix dit met enum
-					Messaging::Message message(UpdatePositionRequest ,locationToString(position));
-					c1ient.dispatchMessage( message);
+					localPort = Application::MainApplication::getArg( "-local_port").value;
 				}
+
+				if (Application::MainApplication::isArgGiven( "-remote_port"))
+				{
+					remotePort = Application::MainApplication::getArg( "-remote_port").value;
+				}
+
+				std::cout << "Communicating on ip: localhost, port: " << localPort << " Remote port: " << remotePort << std::endl;
+
+				Messaging::Client c1ient( 	"localhost",
+											remotePort,
+											Model::RobotWorld::getRobotWorld().getPointer());
+
+				//TODO Fix dit met enum
+				Messaging::Message message(Model::RobotWorld::UpdatePositionRequest ,locationToString(position));
+				c1ient.dispatchMessage( message);
+
 
 				//TODO Hier staat een sleep?
 				std::this_thread::sleep_for( std::chrono::milliseconds(100));
@@ -540,15 +435,6 @@ namespace Model
 		ss << std::setw(4) << std::setfill('0') << aLocation.y;
 
 		return ss.str();
-	}
-
-	Point Robot::stringToLocation(std::string aString)
-	{
-		unsigned short locationX = (aString[0] - 48) * 1000 + (aString[1] - 48) * 100 + (aString[2] - 48) * 10 + (aString[3] - 48);
-		unsigned short locationY = (aString[4] - 48) * 1000 + (aString[5] - 48) * 100 + (aString[6] - 48) * 10 + (aString[7] - 48);
-		std::cout << "LOC X: " << locationX << " LOC Y: " << locationY << std::endl;
-
-		return Point(locationX, locationY);
 	}
 
 	/**

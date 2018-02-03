@@ -33,7 +33,6 @@ namespace Model
 	typedef std::shared_ptr<Goal> GoalPtr;
 
 	class Robot :	public AbstractAgent,
-					public Messaging::MessageHandler,
 					public Base::Observer
 	{
 		public:
@@ -141,22 +140,11 @@ namespace Model
 			 *
 			 * @return true if the robot is communicating, i.e. listens with an active ServerConnection
 			 */
-			bool isCommunicating() const
-			{
-				return communicating;
-			}
-			/**
-			 * Starts a ServerConnection that listens at port 12345 unless given
-			 * an other port by specifying a command line argument -local_port=port
-			 */
-			void startCommunicating();
-			/**
-			 * Connects to the ServerConnection that listens at port 12345 unless given
-			 * an other port by specifying a command line argument -local_port=port
-			 * and sends a message with messageType "1" and a body with "stop"
-			 *
-			 */
-			void stopCommunicating();
+//			bool isCommunicating() const
+//			{
+//				return communicating;
+//			}
+
 			/**
 			 *
 			 */
@@ -206,24 +194,7 @@ namespace Model
 			{
 				return path;
 			}
-			/**
-			 * @name Messaging::MessageHandler functions
-			 */
-			//@{
-			/**
-			 * This function is called by a ServerSesssion whenever a message is received. If the request is handled,
-			 * any response *must* be set in the Message argument. The message argument is then echoed back to the
-			 * requester, probably a ClientSession.
-			 *
-			 * @see Messaging::RequestHandler::handleRequest( Messaging::Message& aMessage)
-			 */
-			virtual void handleRequest( Messaging::Message& aMessage);
-			/**
-			 * This function is called by a ClientSession whenever a response to a previous request is received.
-			 *
-			 * @see Messaging::ResponseHandler::handleResponse( const Messaging::Message& aMessage)
-			 */
-			virtual void handleResponse( const Messaging::Message& aMessage);
+
 			//@}
 			/**
 			 * @name Debug functions
@@ -238,19 +209,6 @@ namespace Model
 			 */
 			virtual std::string asDebugString() const;
 			//@}
-
-			/**
-			 * @name The types of messages a Robot should understand
-			 */
-			//@{
-			enum MessageType
-			{
-				EchoRequest,
-				EchoResponse,
-				UpdatePositionRequest,
-				UpdatePositionResponse,
-				UpdateFieldRequest
-			};
 
 		protected:
 			/**
@@ -285,17 +243,12 @@ namespace Model
 
 			bool acting;
 			bool driving;
-			bool communicating;
 
 			std::thread robotThread;
 			mutable std::recursive_mutex robotMutex;
 
 			//---------- ---------- [Added functions] ---------- ----------//
 			std::string locationToString(Point aLocation);
-			Point stringToLocation(std::string aString);
-
-			std::string localPort;
-			std::string remotePort;
 	};
 } // namespace Model
 #endif // ROBOT_HPP_
