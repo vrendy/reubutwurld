@@ -248,7 +248,8 @@ namespace Model
 				EchoRequest,
 				EchoResponse,
 				UpdatePositionRequest,
-				UpdatePositionResponse
+				UpdatePositionResponse,
+				UpdateFieldRequest
 			};
 
 		protected:

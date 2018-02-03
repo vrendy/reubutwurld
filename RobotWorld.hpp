@@ -150,6 +150,8 @@ namespace Model
 			virtual std::string asDebugString() const;
 			//@}
 
+			void mergeWorlds();
+
 		protected:
 			/**
 			 *

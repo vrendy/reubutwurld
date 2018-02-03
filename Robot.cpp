@@ -403,11 +403,6 @@ namespace Model
 			case UpdatePositionResponse:
 			{
 				Application::Logger::log("Response: " + aMessage.getBody());
-
-				//TODO Hier de positie van de andere robot bijhouden
-				//position = stringToLocation(aMessage.getBody());
-				auto r2 = RobotWorld::getRobotWorld().getRobot("Robot2");
-				r2->setPosition(stringToLocation(aMessage.getBody()));
 				break;
 			}
 			default:

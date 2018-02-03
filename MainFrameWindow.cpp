@@ -313,7 +313,8 @@ namespace Application
 
 	void MainFrameWindow::OnMergeWorlds(CommandEvent& UNUSEDPARAM(anEvent))
 	{
-		Application::Logger::log("Merging");
+		//TODO Send message world to client
+		Application::Logger::log("Merging...");
 	}
 
 	/**
